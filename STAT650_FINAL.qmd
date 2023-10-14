@@ -1,0 +1,61 @@
+---
+title: "STAT650_FINAL"
+author: "Manikanta Reddy, Vigneshwaran Anandan"
+format: pdf
+editor: visual
+---
+
+## Data Import and Source
+
+Data Source is prepared by Andrée, B. P. J. and got from Kaggle. we can access data from following website.
+
+URL : https://www.kaggle.com/datasets/anshtanwar/monthly-food-price-estimates/data
+
+```{r}
+library(pacman)
+pacman::p_load(funModeling,tidyverse,ggplot2,forecast,repr)
+df <- read.csv('data/WLD_RTFP_country_2023-10-02.csv')
+```
+
+## Column Level Description & Summary Statistics
+
+```{r}
+
+df <- df %>% filter( country=="Somalia")
+metadata <- funModeling::df_status(df, print_results = FALSE)
+knitr::kable(metadata)
+```
+
+This data set includes Global Food Price Estimates and Inflation by Product, Market, and Country. It includes food price estimates and is intended to help gain insight into price developments beyond what can be formally measured by traditional methods. The data set provides new opportunities to investigate local price dynamics in areas where populations are sensitive to localized price shocks and where traditional data are not available.
+
+Our interest is to predict the inflation rate in Somalia in the future with the data provided.
+
+Predictor of Interest : Inflation (represents the rate of inflation)
+
+## Data Visualization
+
+```{r,warning=FALSE}
+#create a time series object
+som <- ts(data=df$Inflation , start= 2007,frequency =12)
+som
+
+options(repr.plot.width=15, repr.plot.height = 5)
+
+#overview of the data
+autoplot(som)
+
+#Auto Correlation and Partial Auto Correlation
+ggtsdisplay(som)
+
+# view the second difference
+ggtsdisplay(diff(diff(som)))
+
+#forecast
+Arima(som, order=c(12,2,12)) %>% forecast(7*12)%>% autoplot()
+```
+
+ACF plot shows the relation till lag 12 (p =12)
+
+Pacf plot shows the relation till lag 13 (q= 12)
+
+From the above ARIMA plot, we can see that inflation rate of food in Somalia is decreasing in near future.
